@@ -1,6 +1,28 @@
-﻿namespace SubnauticaModloader
+﻿using System.Collections.Generic;
+
+namespace SubnauticaModloader
 {
-    class Modloader
+    public class ModInfo
+    {
+        public string Name;
+        public string Description;
+        public string Author;
+        public string Version;
+        public string AssemblyLocation;
+
+        public string Directory;
+
+        public Dictionary<string, Tech> Tech = new Dictionary<string, Tech>();
+
+        public ModInfo(string name, string description, string author, string version)
+        {
+            Name = name;
+            Description = description;
+            Author = author;
+            Version = version;
+        }
+    }
+    public class Modloader
     {
         public ModInfo GetModInfo(int index)
         {

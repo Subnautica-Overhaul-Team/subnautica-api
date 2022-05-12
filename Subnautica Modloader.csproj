@@ -87,18 +87,20 @@
     <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>..\..\..\..\Programs\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Programs\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UnityWebRequestModule">
       <HintPath>..\..\..\..\Programs\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Tech.cs" />
-    <Compile Include="ItemBackground.cs" />
     <Compile Include="Modloader.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="VehicleModuleItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

@@ -49,9 +49,9 @@ namespace SubnauticaModloader
             private static List<TechType> ConvertToTechTypeList(int[] array)
             {
                 List<TechType> list = new List<TechType>();
-                foreach (int item in array)
+                foreach (int tech in array)
                 {
-                    list.Add((TechType)item);
+                    list.Add((TechType)tech);
                 }
                 return list;
             }
@@ -68,8 +68,9 @@ namespace SubnauticaModloader
 
             public Tech Unwrap()
             {
-                return new Tech(ID, (CraftTree.Type)CraftType)
+                return new Tech(ID)
                 {
+                    CraftType = (CraftTree.Type)CraftType,
                     EquipmentSlot = (EquipmentType)EquipmentSlot,
                     UseType = (QuickSlotType)UseType,
                     Group = Group,
@@ -93,7 +94,7 @@ namespace SubnauticaModloader
         private static readonly Dictionary<TechType, QuickSlotType> slotTypesData = (Dictionary<TechType, QuickSlotType>)typeof(CraftData).GetField("slotTypes", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
         private static readonly Dictionary<TechType, CraftData.BackgroundType> backgroundData = (Dictionary<TechType, CraftData.BackgroundType>)typeof(CraftData).GetField("backgroundTypes", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
         private static readonly Dictionary<TechType, float> craftingTimesData = (Dictionary<TechType, float>)typeof(CraftData).GetField("craftingTimes", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
-        private static readonly Dictionary<TechType, Vector2int> itemSizesData = (Dictionary<TechType, Vector2int>)typeof(CraftData).GetField("itemSizes", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+        private static readonly Dictionary<TechType, Vector2int> techSizesData = (Dictionary<TechType, Vector2int>)typeof(CraftData).GetField("itemSizes", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
         private static readonly object recipeData = typeof(CraftData).GetField("techData", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
 
         private static readonly Dictionary<TechType, string> stringsNormalData = (Dictionary<TechType, string>)typeof(TechTypeExtensions).GetField("stringsNormal", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
@@ -113,67 +114,67 @@ namespace SubnauticaModloader
 
         internal static void LoadJSON()
         {
-            for(int i = 0; i < Plugin.Mods.Count; i ++)
+            for (int i = 0; i < Plugin.Mods.Count; i++)
             {
-                if(Directory.Exists(Plugin.Mods[i].Directory + "\\Tech"))
+                if (Directory.Exists(Plugin.Mods[i].Directory + "\\Tech"))
                 {
                     foreach (string dir in Directory.GetDirectories(Plugin.Mods[i].Directory + "\\Tech"))
                     {
-                        string js = File.ReadAllText(dir + "\\item.json");
-                        JSONTechWrapper jsItem = JsonMapper.ToObject<JSONTechWrapper>(js);
+                        string js = File.ReadAllText(dir + "\\tech.json");
+                        JSONTechWrapper jsTech = JsonMapper.ToObject<JSONTechWrapper>(js);
                         foreach (string file in Directory.GetFiles(dir + "\\Ingredients"))
                         {
                             js = File.ReadAllText(file);
                             JSONIngredientWrapper jsIngredient = JsonMapper.ToObject<JSONIngredientWrapper>(js);
-                            jsItem.Recipe.Add(jsIngredient);
+                            jsTech.Recipe.Add(jsIngredient);
                         }
-                        Add(i, jsItem.Unwrap());
+                        Add(i, jsTech.Unwrap());
                     }
                 }
             }
         }
-        public static void Add(int modIndex, Tech item)
+        public static void Add(int modIndex, Tech tech)
         {
-            equipmentTypesData[item.Type] = item.EquipmentSlot;
-            slotTypesData[item.Type] = item.UseType;
-            backgroundData[item.Type] = item.Background;
-            craftingTimesData[item.Type] = item.CraftingTime;
-            itemSizesData[item.Type] = item.InventorySize;
+            equipmentTypesData[tech.Type] = tech.EquipmentSlot;
+            slotTypesData[tech.Type] = tech.UseType;
+            backgroundData[tech.Type] = tech.Background;
+            craftingTimesData[tech.Type] = tech.CraftingTime;
+            techSizesData[tech.Type] = tech.InventorySize;
 
-            stringsNormalData[item.Type] = item.ID;
-            stringsLowercaseData[item.Type] = item.ID.ToLower();
-            techTypesNormalData[item.ID] = item.Type;
-            techTypesIgnoreCaseData[item.ID.ToLower()] = item.Type;
-            techTypeKeysData[item.Type] = item.ID;
-            keyTechTypesData[item.ID] = item.Type;
+            stringsNormalData[tech.Type] = tech.ID;
+            stringsLowercaseData[tech.Type] = tech.ID.ToLower();
+            techTypesNormalData[tech.ID] = tech.Type;
+            techTypesIgnoreCaseData[tech.ID.ToLower()] = tech.Type;
+            techTypeKeysData[tech.Type] = tech.ID;
+            keyTechTypesData[tech.ID] = tech.Type;
 
-            techTypeTooltipStringsData[item.Type] = "Tooltip_" + item.ID;
+            techTypeTooltipStringsData[tech.Type] = "Tooltip_" + tech.ID;
 
-            if (item.Icon != SpriteManager.defaultSprite && item.IconName == "")
+            if (tech.Icon != SpriteManager.defaultSprite && tech.IconName == "")
             {
-                iconGroupsData[SpriteManager.Group.Item][item.ID] = item.Icon;
+                iconGroupsData[SpriteManager.Group.Item][tech.ID] = tech.Icon;
             }
             else
             {
-                iconGroupsData[SpriteManager.Group.Item][item.ID] = SpriteManager.Get(SpriteManager.Group.Item, item.IconName);
+                iconGroupsData[SpriteManager.Group.Item][tech.ID] = SpriteManager.Get(SpriteManager.Group.Item, tech.IconName);
             }
 
             var techData = Activator.CreateInstance(TechData);
             var ingredients = Activator.CreateInstance(Ingredients);
 
-            TechData.GetField("_craftAmount").SetValue(techData, item.CraftAmount);
-            TechData.GetField("_linkedItems").SetValue(techData, item.LinkedItems);
-            foreach (var ingredient in item.Recipe)
+            TechData.GetField("_craftAmount").SetValue(techData, tech.CraftAmount);
+            TechData.GetField("_linkedItems").SetValue(techData, tech.LinkedItems);
+            foreach (var ingredient in tech.Recipe)
             {
                 Ingredients.GetMethod("Add", new Type[2] { typeof(TechType), typeof(int) }).Invoke(ingredients, new object[2] { ingredient.Key, ingredient.Value });
             }
             TechData.GetField("_ingredients").SetValue(techData, ingredients);
-            recipeData.GetType().GetMethod("Add").Invoke(recipeData, new object[2] { item.Type, techData });
+            recipeData.GetType().GetMethod("Add").Invoke(recipeData, new object[2] { tech.Type, techData });
 
-            Plugin.Mods[modIndex].Items.Add(item);
-            Plugin.LogInfo("Added item from " + Plugin.Mods[modIndex].Name + " mod to database. ID: " + item.ID + ", TechType: " + item.Type.ToString() + ".");
+            tech.Setup?.Invoke();
+            Plugin.Mods[modIndex].Tech.Add(tech.ID, tech);
+            Plugin.LogInfo("Added tech from " + Plugin.Mods[modIndex].Name + " mod to database. ID: " + tech.ID + ", TechType: " + tech.Type.ToString() + ".");
         }
-
         public static void ModifyEquipmentSlot(TechType type, EquipmentType eqslot)
         {
             equipmentTypesData[type] = eqslot;
@@ -195,14 +196,14 @@ namespace SubnauticaModloader
             object techData = recipeData.GetType().GetProperty("Item").GetValue(recipeData, new object[1] { type });
             techData.GetType().GetField("_craftAmount", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(techData, amount);
         }
-        public static void ModifyLinkedItems(TechType type, List<TechType> litems)
+        public static void ModifyLinkedItems(TechType type, List<TechType> ltechs)
         {
             object techData = recipeData.GetType().GetProperty("Item").GetValue(recipeData, new object[1] { type });
-            techData.GetType().GetField("_linkedItems", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(techData, litems);
+            techData.GetType().GetField("_linkedItems", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(techData, ltechs);
         }
         public static void ModifyItemSize(TechType type, Vector2int size)
         {
-            itemSizesData[type] = size;
+            techSizesData[type] = size;
         }
         public static void ModifyRecipe(TechType type, Dictionary<TechType, int> recipe)
         {
@@ -221,9 +222,9 @@ namespace SubnauticaModloader
         {
             HashSet<TechType> defaultTechData = (HashSet<TechType>)typeof(KnownTech).GetField("defaultTech", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
             List<KnownTech.CompoundTech> compoundTechData = (List<KnownTech.CompoundTech>)typeof(KnownTech).GetField("compoundTech", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
-            foreach(ModInfo mod in Plugin.Mods)
+            foreach (ModInfo mod in Plugin.Mods)
             {
-                foreach (Tech i in mod.Items)
+                foreach (Tech i in mod.Tech.Values)
                 {
                     if (i.UnlockDependencies.Count == 0)
                     {
@@ -245,7 +246,7 @@ namespace SubnauticaModloader
         {
             foreach (ModInfo mod in Plugin.Mods)
             {
-                foreach (Tech i in mod.Items)
+                foreach (Tech i in mod.Tech.Values)
                 {
                     PrefabDatabase.prefabFiles[i.ID] = i.ID;
                 }
@@ -259,19 +260,14 @@ namespace SubnauticaModloader
 
                 foreach (ModInfo mod in Plugin.Mods)
                 {
-                    foreach (Tech i in mod.Items)
+                    foreach (Tech i in mod.Tech.Values)
                     {
                         GameObject go;
-                        if (i.PrefabID != "")
+                        if (!String.IsNullOrWhiteSpace(i.PrefabID))
                         {
                             if (PrefabDatabase.GetPrefabAsync(i.PrefabID).TryGetPrefab(out go))
                             {
                                 go = GameObject.Instantiate(go);
-                                /*if (i.OverwritePrefab)
-                                {
-                                    go.GetComponent<TechTag>().type = i.Type;
-                                    go.GetComponent<UniqueIdentifier>().ClassId = i.ID;
-                                }*/
                             }
                         }
                         else
@@ -280,7 +276,6 @@ namespace SubnauticaModloader
                         }
                         techMappingData[i.Type] = i.ID;
                         scenePrefabsData[i.ID] = go;
-                        //prefabCacheData[i.ID] = new LoadedPrefabRequest(go);
                     }
                 }
 
@@ -442,9 +437,9 @@ namespace SubnauticaModloader
 
             foreach (ModInfo mod in Plugin.Mods)
             {
-                foreach (Tech i in mod.Items)
+                foreach (Tech i in mod.Tech.Values)
                 {
-                    if(i.CraftType == CraftTree.Type.Fabricator)
+                    if (i.CraftType == CraftTree.Type.Fabricator)
                     {
                         if (craftNodes.TryGetValue(i.Group, out Dictionary<string, CraftNode> category))
                         {
@@ -486,7 +481,7 @@ namespace SubnauticaModloader
         {
             string js;
             Plugin.LogInfo("Trying to load " + language + " localization for mod.");
-            foreach(ModInfo mod in Plugin.Mods)
+            foreach (ModInfo mod in Plugin.Mods)
             {
                 if (File.Exists(mod.Directory + "\\Localization\\" + language + ".json"))
                 {
@@ -506,6 +501,33 @@ namespace SubnauticaModloader
             }
             __result = true;
         }
+        private static bool Utils_TryParseEnumTechType_Prefix(ref string val, ref TechType result, ref bool __result)
+        {
+            foreach (ModInfo mod in Plugin.Mods)
+            {
+                foreach (Tech tech in mod.Tech.Values)
+                {
+                    if (val.ToLower() == tech.ID.ToLower())
+                    {
+                        result = tech.Type;
+                        __result = true;
+                        return false;
+                    }
+                }
+            }
+            try
+            {
+                result = (TechType)Enum.Parse(typeof(TechType), val, true);
+            }
+            catch
+            {
+                result = default;
+                __result = false;
+                return false;
+            }
+            __result = true;
+            return false;
+        }
         internal static void ApplyPatches(Harmony h)
         {
             h.Patch(typeof(KnownTech).GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static), null, new HarmonyMethod(typeof(Tech).GetMethod("KnownTech_Initialize_Postfix", BindingFlags.NonPublic | BindingFlags.Static)));
@@ -513,12 +535,13 @@ namespace SubnauticaModloader
             h.Patch(typeof(CraftData).GetMethod("PreparePrefabIDCache", BindingFlags.Public | BindingFlags.Static), null, new HarmonyMethod(typeof(Tech).GetMethod("CraftData_PreparePrefabIDCache_Postfix", BindingFlags.NonPublic | BindingFlags.Static)));
             h.Patch(typeof(CraftTree).GetMethod("FabricatorScheme", BindingFlags.NonPublic | BindingFlags.Static), new HarmonyMethod(typeof(Tech).GetMethod("CraftTree_FabricatorScheme_Prefix", BindingFlags.NonPublic | BindingFlags.Static)));
             h.Patch(typeof(Language).GetMethod("LoadLanguageFile", BindingFlags.NonPublic | BindingFlags.Instance), null, new HarmonyMethod(typeof(Tech).GetMethod("Language_LoadLanguageFile_Postfix", BindingFlags.NonPublic | BindingFlags.Static)));
+            h.Patch(typeof(UWE.Utils).GetMethod("TryParseEnum", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(TechType)), new HarmonyMethod(typeof(Tech).GetMethod("Utils_TryParseEnumTechType_Prefix", BindingFlags.NonPublic | BindingFlags.Static)));
         }
 
         public readonly TechType Type = Utils.GetNextEnumIndex<TechType>();
 
         public string ID;
-        public CraftTree.Type CraftType = CraftTree.Type.Fabricator;
+        public CraftTree.Type CraftType = CraftTree.Type.None;
 
         public EquipmentType EquipmentSlot = EquipmentType.Hand;
         public QuickSlotType UseType = QuickSlotType.Selectable;
@@ -543,10 +566,49 @@ namespace SubnauticaModloader
         public string IconName = "";
         public Atlas.Sprite Icon = SpriteManager.defaultSprite;
 
-        public Tech(string id, CraftTree.Type craftType)
+        public delegate void SetupDelegate();
+        public SetupDelegate Setup;
+
+        public Tech(string id)
         {
             ID = id;
-            CraftType = craftType;
+        }
+    }
+    public class PickupableTech : Tech
+    {
+        private void SetupMethod()
+        {
+            if(Prefab == null)
+            {
+                Plugin.LogWarning("Prefab must not be null.");
+                return;
+            }
+            if (!String.IsNullOrEmpty(PrefabID))
+            {
+                Plugin.LogWarning("Modifying builtin prefabs is not yet supported.");
+                return;
+            }
+            if(!Prefab.GetComponent<Rigidbody>() || !Prefab.GetComponent<Collider>())
+            {
+                Plugin.LogWarning("Prefab must have Rigidbody and Collider in order to work properly.");
+                return;
+            }
+            Prefab.AddComponent<TechTag>().type = Type;
+            PrefabIdentifier pi = Prefab.AddComponent<PrefabIdentifier>();
+            pi.Id = ID;
+            pi.ClassId = ID;
+            Prefab.AddComponent<ItemPrefabData>();
+            Prefab.AddComponent<Pickupable>();
+            Prefab.AddComponent<WorldForces>();
+            Prefab.AddComponent<OnSurfaceTracker>();
+            OnSurfaceDownforce osd = Prefab.AddComponent<OnSurfaceDownforce>();
+            osd.onSurfaceTracker = Prefab.GetComponent<OnSurfaceTracker>();
+            osd.useRigidbody = Prefab.GetComponent<Rigidbody>();
+            osd.worldForces = Prefab.GetComponent<WorldForces>();
+        }
+        public PickupableTech(string id) : base(id)
+        {
+            Setup = SetupMethod;
         }
     }
 }

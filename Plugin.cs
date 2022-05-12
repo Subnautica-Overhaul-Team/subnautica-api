@@ -9,27 +9,6 @@ using HarmonyLib;
 
 namespace SubnauticaModloader
 {
-    public class ModInfo
-    {
-        public string Name;
-        public string Description;
-        public string Author;
-        public string Version;
-        public string AssemblyLocation;
-
-        public string Directory;
-
-        public List<Tech> Items = new List<Tech>();
-
-        public ModInfo(string name, string description, string author, string version)
-        {
-            Name = name;
-            Description = description;
-            Author = author;
-            Version = version;
-        }
-    }
-
     [BepInPlugin("subnautica-modloader", "Subnautica Modloader", "0.0.1")]
     internal class Plugin : BaseUnityPlugin
     {
@@ -70,7 +49,7 @@ namespace SubnauticaModloader
         {
             if (instance != null)
             {
-                Logger.LogError("Modloader plugin is already initialized.");
+                LogError("Modloader plugin is already initialized.");
                 return;
             };
             instance = this;
@@ -89,15 +68,15 @@ namespace SubnauticaModloader
                         ModInfo mod = modInfo.Unwrap();
                         mod.Directory = dir;
                         Mods.Add(mod);
-                        LogInfo("Name:" + modInfo.Name);
-                        LogInfo("Description:" + modInfo.Description);
-                        LogInfo("Author:" + modInfo.Author);
-                        LogInfo("Version:" + modInfo.Version + "\n");
+                        LogInfo("Name: " + modInfo.Name);
+                        LogInfo("Description: " + modInfo.Description);
+                        LogInfo("Author: " + modInfo.Author);
+                        LogInfo("Version: " + modInfo.Version + "\n");
                     }
                 }
                 else
                 {
-                    LogError("Couldn't find mod.json for " + dir + ".");
+                    LogError("Failed to find mod.json for " + dir + ".");
                 }
             }
             Tech.LoadJSON();
@@ -122,13 +101,13 @@ namespace SubnauticaModloader
                             }
                             else
                             {
-                                LogError("Failed to find method Main in " + Mods[i].Directory + "\\" + Mods[i].AssemblyLocation + ".");
+                                LogError("Failed to find entry point at " + Mods[i].Directory + "\\" + Mods[i].AssemblyLocation + ".");
                             }
                         }
                     }
                     else
                     {
-                        LogError("Failed to execute assembly for " + Mods[i].Name + ".");
+                        LogError("Failed to load assembly of " + Mods[i].Name + ".");
                     }
                 }
             }

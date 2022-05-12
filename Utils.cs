@@ -6,9 +6,22 @@ using UnityEngine;
 
 namespace SubnauticaModloader
 {
-    static class Utils
+    public static class Utils
     {
         private static readonly Dictionary<Type, int> indexes = new Dictionary<Type, int>();
+        internal static T GetNextEnumIndex<T>() where T: Enum
+        {
+            Array arr = Enum.GetValues(typeof(T));
+            if (indexes.TryGetValue(typeof(T), out _))
+            {
+                indexes[typeof(T)]++;
+            }
+            else
+            {
+                indexes[typeof(T)] = 1;
+            }
+            return (T)Enum.ToObject(typeof(T), (int)arr.GetValue(arr.Length - 1) + indexes[typeof(T)]);
+        }
         public static Atlas.Sprite LoadIcon(string filename)
         {
             if (File.Exists("Mods\\Resources\\" + filename))
@@ -22,19 +35,6 @@ namespace SubnauticaModloader
                 return new Atlas.Sprite(s, false);
             }
             return SpriteManager.defaultSprite;
-        }
-        internal static T GetNextEnumIndex<T>() where T: Enum
-        {
-            Array arr = Enum.GetValues(typeof(T));
-            if (indexes.TryGetValue(typeof(T), out _))
-            {
-                indexes[typeof(T)]++;
-            }
-            else
-            {
-                indexes[typeof(T)] = 1;
-            }
-            return (T)Enum.ToObject(typeof(T), (int)arr.GetValue(arr.Length - 1) + indexes[typeof(T)]);
         }
     }
 }
